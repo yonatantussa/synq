@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>synq</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body {
+      background: #000;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #auth-prompt {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      z-index: 10;
+    }
+
+    #auth-prompt button {
+      background: #1DB954;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 24px;
+      cursor: pointer;
+      margin-top: 20px;
+      font-weight: 600;
+    }
+
+    #auth-prompt button:hover {
+      background: #1ed760;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="auth-prompt" class="hidden">
+    <button onclick="authenticateSpotify()">Connect Spotify</button>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const ElectronStore = require('electron-store');
+    const store = new (ElectronStore.default || ElectronStore)({ name: 'synq-config' });
+
+    // Check if we need authentication
+    window.spotifyAccessToken = null;
+
+    async function checkAuth() {
+      const tokens = store.get('tokens');
+
+      if (!tokens || !tokens.access_token) {
+        showAuthPrompt();
+        return false;
+      }
+
+      // Check if token is expired
+      if (Date.now() >= tokens.expires_at - 300000) {
+        // Token expired, need to refresh
+        showAuthPrompt();
+        return false;
+      }
+
+      window.spotifyAccessToken = tokens.access_token;
+      hideAuthPrompt();
+      return true;
+    }
+
+    function showAuthPrompt() {
+      document.getElementById('auth-prompt').classList.remove('hidden');
+      document.getElementById('canvas').style.opacity = '0.3';
+    }
+
+    function hideAuthPrompt() {
+      document.getElementById('auth-prompt').classList.add('hidden');
+      document.getElementById('canvas').style.opacity = '1';
+    }
+
+    function authenticateSpotify() {
+      ipcRenderer.send('start-auth');
+    }
+
+    // Listen for auth completion
+    ipcRenderer.on('auth-complete', async () => {
+      const success = await checkAuth();
+      if (success) {
+        location.reload(); // Reload to reinitialize with new token
+      }
+    });
+
+    // Check auth on load
+    checkAuth();
+  </script>
+
+  <script src="config.js"></script>
+  <script src="audioAnalyzer.js"></script>
+  <script src="spotify.js"></script>
+  <script src="visualizer.js"></script>
+</body>
+</html>

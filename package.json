@@ -1,0 +1,55 @@
+{
+  "name": "synq",
+  "version": "1.0.0",
+  "main": "dist/electron/main.js",
+  "scripts": {
+    "check-env": "node scripts/check-env.js",
+    "build": "tsc",
+    "start": "npm run check-env && npm run build && electron .",
+    "dev": "npm run check-env && tsc && electron .",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder"
+  },
+  "keywords": ["spotify", "visualizer", "music", "audio", "electron", "macos"],
+  "author": "Yonatan Tussa",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yonatantussa/synq.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yonatantussa/synq/issues"
+  },
+  "homepage": "https://github.com/yonatantussa/synq#readme",
+  "type": "commonjs",
+  "description": "Beat-synced Spotify visualizer for macOS",
+  "build": {
+    "appId": "com.synq.app",
+    "productName": "synq",
+    "mac": {
+      "category": "public.app-category.music",
+      "target": [
+        "dmg"
+      ],
+      "icon": "assets/icon.icns"
+    },
+    "files": [
+      "dist/**/*",
+      "src/app/**/*",
+      "node_modules/**/*"
+    ]
+  },
+  "devDependencies": {
+    "@types/electron-store": "^1.3.1",
+    "@types/node": "^24.9.0",
+    "electron": "^38.3.0",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "dotenv": "^17.2.3",
+    "electron-store": "^11.0.2",
+    "selfsigned": "^3.0.1"
+  }
+}
